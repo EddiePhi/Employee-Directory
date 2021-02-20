@@ -2,12 +2,12 @@
 // Referencing work from Lanchi Pham: https://github.com/lpham2525/directory
 
 import React, { Component } from "react";
-// import Employee from "./components/Employee";
 
 export default class App extends Component {
   state = {
     people: [],
-    search: ""
+    filterPeople: [],
+    filterPerson: ""
   };
 
   componentDidMount() {
@@ -16,8 +16,12 @@ export default class App extends Component {
     data
       .then((response) => response.json())
       .then((response) => {
-        this.setState({ people: response.results });
+        this.setState({
+          people: response.results,
+          filterPeople: response.results
+        });
         console.log(this.state.people);
+        console.log(this.state.filterPerson);
       });
   }
 
@@ -25,6 +29,7 @@ export default class App extends Component {
     console.log("I will unmount");
   }
 
+  // Takes arguments from people array and compares alphabetically
   handleSort = () => {
     let people = this.state.people;
     people.sort((a, b) => {
@@ -41,29 +46,37 @@ export default class App extends Component {
     this.setState({
       people
     });
+    console.log(this.state);
   };
 
   handleInputChange = (event) => {
-    this.setState({ search: event.target.value });
+    this.setState({ filterPerson: event.target.value });
   };
 
-  handleSearch = (event) => {
-    // event.preventDefault();
-    console.log(event.target.value);
-    let found = this.state.people.filter((person) => {
-      if (event.target.value === person.name.first) {
-        return person.email;
-      }
-    });
-    this.setState({ employees: found });
+  //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+  handleFilter = (event) => {
+    let people = this.state.people;
+
+    const found = people.filter((person) =>
+      person.email.includes(this.state.filterPerson)
+    );
+
+    console.log(found);
+    this.setState({ filterPeople: found });
+    console.log(people);
+    // console.log(this.state);
   };
 
-  //filtering: https://www.w3schools.com/jsref/jsref_filter.asp
-  // handleSearchClick = () => {
-  //   let people = this.state.people;
+  handleUndo = (event) => {
+    let people = this.state.people;
 
-  //   people.filter();
-  // };
+    console.log(people);
+    this.setState({ filterPeople: this.state.people });
+  };
+
+  // Notes for Jim
+  // 1 Avoid overwriting array with new list.
+  // 2 have two set states: one for the filtered list, one for the regular list?
 
   render() {
     return (
@@ -71,32 +84,32 @@ export default class App extends Component {
         <h1>Employee directory</h1>
         <input
           type="text"
-          value={this.state.search}
+          value={this.state.filterPerson}
           onChange={this.handleInputChange}
         />
         <button
           type="button"
-          onClick={this.handleSearch}
+          onClick={this.handleFilter}
           className="btn btn-danger"
         >
-          Search
+          Filter
         </button>
-        <br />
         <button
           type="button"
-          onClick={this.handleSearchClick}
+          onClick={this.handleUndo}
           className="btn btn-success"
         >
-          Filter above 18
+          Undo Filter
         </button>
+        <br />
         <button onClick={this.handleSort} className="btn btn-primary">
-          Sort by email
+          Alphabetize email
         </button>
-        <table border={1}>
+        <table border={1} people={this.state.filterPeople}>
           <tr>
             <th>Employee Emails</th>
           </tr>
-          {this.state.people.map((person) => (
+          {this.state.filterPeople.map((person) => (
             <tr>
               <td>
                 <h5 key={person.email}>{person.email}</h5>
